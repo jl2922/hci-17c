@@ -1,0 +1,16 @@
+{
+  "type": "heg",
+  "n_up": 7,
+  "n_dn": 7,
+  "r_s": 0.5,
+  "rcut_vars": [
+    2.5
+  ],
+  "eps_vars": [
+    0.001
+  ],
+  "rcut_pt_ratio": 1.26,
+  "eps_var_ham_old_ratio": 0.01,
+  "eps_var_ham_new_ratio": 1.0,
+  "eps_pt_ratio": 0.01
+}

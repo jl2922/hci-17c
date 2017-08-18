@@ -1,0 +1,3 @@
+CXX := mpic++
+CXXFLAGS := $(CXXFLAGS) -I /home/junhao/eigen-3.3.3 -I /home/junhao/boost-1.63.0/include
+LDLIBS := -L /home/junhao/boost-1.63.0/lib $(LDLIBS)
