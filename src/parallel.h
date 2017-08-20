@@ -75,7 +75,7 @@ class Parallel {
   }
 
   template <class T>
-  static void reduce_to_vector_sum(std::vector<T>& t) {
+  static void reduce_to_sum_vector(std::vector<T>& t) {
     std::vector<T> t_local = t;
     boost::mpi::all_reduce(Parallel::get_instance().world, t_local, t, vector_plus<T>());
   }
