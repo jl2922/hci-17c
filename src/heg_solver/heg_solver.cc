@@ -18,6 +18,7 @@ void HEGSolver::solve() {
   for (size_t i = 0; i < rcut_vars.size(); i++) {
     if (i > 0 && rcut_vars[i] == rcut_vars[i - 1]) continue;
     const double rcut_var = rcut_vars[i];
+    wf.clear();
     std::string rcut_var_event = str(boost::format("rcut_var: %#.4g") % rcut_var);
     Time::start(rcut_var_event);
 
@@ -43,6 +44,10 @@ void HEGSolver::solve() {
 
   const bool variation_only = Config::get<bool>("variation_only", false);
   if (variation_only) return;
+
+  Time::start("perturbation");
+
+  Time::end();
 }
 
 void HEGSolver::setup(const double rcut) {
