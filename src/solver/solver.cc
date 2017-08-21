@@ -1,6 +1,7 @@
 #include "solver.h"
 
 #include <boost/functional/hash.hpp>
+#include <boost/format.hpp>
 #include "../parallel.h"
 #include "../std.h"
 #include "../time.h"
@@ -86,7 +87,6 @@ double Solver::diagonalize(const bool has_new_dets) {
     initial_vector.push_back(term.coef);
   }
 
-  Time::start("Diagonalization");
   std::function<double(Det, Det)> hamiltonian_func =
       std::bind(&Solver::hamiltonian, this, std::placeholders::_1, std::placeholders::_2);
   HelperStrings helper_strings(hamiltonian_func);
@@ -99,7 +99,7 @@ double Solver::diagonalize(const bool has_new_dets) {
   if (Parallel::is_master()) davidson.set_verbose(true);
   const size_t n_iter = davidson.diagonalize(initial_vector, max_iterations);
   if (!has_new_dets && n_iter < max_iterations) converged = true;
-  Time::end();
+
   const double energy_var = davidson.get_lowest_eigenvalue();
   const auto& coefs_new = davidson.get_lowest_eigenvector();
 
@@ -141,4 +141,54 @@ std::vector<double> Solver::apply_hamiltonian(
   Time::checkpoint("hamiltonian applied");
 
   return res;
+}
+
+
+void Solver::save_variation_result(const std::string& filename) {
+  if (Parallel::is_master()) {
+    std::ofstream var_file;
+    var_file.open(filename);
+    var_file << boost::format("%.15g %.15g\n") % energy_hf % energy_var;
+    var_file << boost::format("%d %d %d\n") % n_up % n_dn % wf.size();
+    for (const auto& term : wf.get_terms()) {
+      var_file << boost::format("%.15g\n") % term.coef;
+      var_file << term.det.up << std::endl << term.det.dn << std::endl;
+    }
+    var_file.close();
+    printf("Variation result saved to: %s\n", filename.c_str());
+  }
+}
+
+
+bool Solver::load_variation_result(const std::string& filename) {
+  std::ifstream var_file;
+  size_t n_dets;
+  Orbital orb_id;
+  double coef;
+  var_file.open(filename);
+  if (!var_file.is_open()) return false;  // Does not exist.
+  var_file >> energy_hf >> energy_var;
+  var_file >> n_up >> n_dn >> n_dets;
+  wf.clear();
+  for (std::size_t i = 0; i < n_dets; i++) {
+    var_file >> coef;
+    Det det;
+    for (std::size_t j = 0; j < n_up; j++) {
+      var_file >> orb_id;
+      det.up.set_orb(orb_id, true);
+    }
+    for (std::size_t j = 0; j < n_dn; j++) {
+      var_file >> orb_id;
+      det.dn.set_orb(orb_id, true);
+    }
+    wf.append_term(det, coef);
+  }
+  var_file.close();
+  if (Parallel::is_master()) {
+    printf("Loaded %'zu dets from: %s\n", n_dets, filename.c_str());
+    printf("HF energy: %#.15g Ha\n", energy_hf);
+    printf("Variation energy: %#.15g Ha\n", energy_var);
+    printf("Correlation energy: %#.15g Ha\n", energy_var - energy_hf);
+  }
+  return true;
 }

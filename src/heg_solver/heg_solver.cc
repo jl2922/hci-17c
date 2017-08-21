@@ -30,11 +30,11 @@ void HEGSolver::solve() {
       const double eps_var = eps_vars[j];
       std::string eps_var_event = str(boost::format("eps_var: %#.4g") % eps_var);
       Time::start(eps_var_event);
-
-      // if (!load_variation_result()) {
-      variation(eps_var);
-      //   save_variation_result();
-      // }
+      const std::string filename = str(boost::format("var_%.5f_%.3f.txt") % eps_var % rcut_var);      
+      if (!load_variation_result(filename)) {
+        variation(eps_var);
+        save_variation_result(filename);
+      }
       Time::end();
     }
     Time::end();

@@ -1,6 +1,9 @@
 # Input file
 config.json
 
+# Output files
+*.txt
+
 # Editor temp files
 .vscode
 

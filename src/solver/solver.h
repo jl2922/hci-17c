@@ -24,6 +24,10 @@ class Solver {
 
   virtual std::list<Det> find_connected_dets(const Det&, const double eps) const = 0;
 
+  void save_variation_result(const std::string&);
+  
+  bool load_variation_result(const std::string&);
+
  private:
   bool converged;
 
