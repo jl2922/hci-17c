@@ -40,6 +40,9 @@ void HEGSolver::solve() {
     Time::end();
   }
   Time::end();
+
+  const bool variation_only = Config::get<bool>("variation_only", false);
+  if (variation_only) return;
 }
 
 void HEGSolver::setup(const double rcut) {

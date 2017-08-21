@@ -148,10 +148,10 @@ void Solver::save_variation_result(const std::string& filename) {
   if (Parallel::is_master()) {
     std::ofstream var_file;
     var_file.open(filename);
-    var_file << boost::format("%.15g %.15g\n") % energy_hf % energy_var;
+    var_file << boost::format("%.17g %.17g\n") % energy_hf % energy_var;
     var_file << boost::format("%d %d %d\n") % n_up % n_dn % wf.size();
     for (const auto& term : wf.get_terms()) {
-      var_file << boost::format("%.15g\n") % term.coef;
+      var_file << boost::format("%.17g\n") % term.coef;
       var_file << term.det.up << std::endl << term.det.dn << std::endl;
     }
     var_file.close();
