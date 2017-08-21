@@ -60,7 +60,7 @@ void Solver::variation(const double eps_var) {
     energy_var = energy_var_new;
     if (Parallel::is_master()) {
       printf("Variation energy: %#.15g Ha\n", energy_var);
-      printf("Correlation energy: %#.15g Ha\n", energy_var - energy_hf);
+      printf("Correlation energy (variation): %#.15g Ha\n", energy_var - energy_hf);
     }
 
     new_dets.clear();
@@ -71,7 +71,7 @@ void Solver::variation(const double eps_var) {
 
   if (Parallel::is_master()) {
     printf("Final variation energy: %#.15g Ha\n", energy_var);
-    printf("Correlation energy: %#.15g Ha\n", energy_var - energy_hf);
+    printf("Correlation energy (variation): %#.15g Ha\n", energy_var - energy_hf);
   }
 }
 
@@ -188,7 +188,7 @@ bool Solver::load_variation_result(const std::string& filename) {
     printf("Loaded %'zu dets from: %s\n", n_dets, filename.c_str());
     printf("HF energy: %#.15g Ha\n", energy_hf);
     printf("Variation energy: %#.15g Ha\n", energy_var);
-    printf("Correlation energy: %#.15g Ha\n", energy_var - energy_hf);
+    printf("Correlation energy (variation): %#.15g Ha\n", energy_var - energy_hf);
   }
   return true;
 }

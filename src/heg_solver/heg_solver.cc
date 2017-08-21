@@ -1,6 +1,7 @@
 #include "heg_solver.h"
 
 #include <boost/functional/hash.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include "../array_math.h"
 #include "../config.h"
 #include "../parallel.h"
@@ -31,7 +32,7 @@ void HEGSolver::solve() {
       const double eps_var = eps_vars[j];
       std::string eps_var_event = str(boost::format("eps_var: %#.4g") % eps_var);
       Time::start(eps_var_event);
-      const std::string filename = str(boost::format("var_%.5f_%.3f.txt") % eps_var % rcut_var);      
+      const std::string filename = str(boost::format("var_%.3g_%.3g.txt") % eps_var % rcut_var);      
       if (!load_variation_result(filename)) {
         variation(eps_var);
         save_variation_result(filename);
@@ -46,7 +47,33 @@ void HEGSolver::solve() {
   if (variation_only) return;
 
   Time::start("perturbation");
-
+  // Start from the largest PT so that it fails earlier upon insufficient memory.
+  for (const double rcut_var : rcut_vars | boost::adaptors::reversed) {
+    std::string rcut_var_event = str(boost::format("rcut_var: %#.4g") % rcut_var);
+    Time::start(rcut_var_event);
+    Time::start("setup");
+    const double rcut_pt_ratio = Config::get<double>("rcut_pt_ratio", 1.26);
+    const double rcut_pt = rcut_var * rcut_pt_ratio;
+    if (Parallel::is_master()) {
+      printf("rcut_pt: %#.4g (%#.4g * %#.4g)\n", rcut_pt, rcut_var, rcut_pt_ratio);
+    }
+    setup(rcut_pt);
+    Time::end();
+    for (const double eps_var : eps_vars | boost::adaptors::reversed) {
+      std::string eps_var_event = str(boost::format("eps_var: %#.4g") % eps_var);
+      Time::start(eps_var_event);
+      const std::string filename = str(boost::format("var_%.3g_%.3g.txt") % eps_var % rcut_var);      
+      assert(load_variation_result(filename));
+      const double eps_pt_ratio = Config::get<double>("eps_pt_ratio", 0.01);
+      const double eps_pt = eps_var * eps_pt_ratio;
+      if (Parallel::is_master()) {
+        printf("eps_pt: %#.4g (%#.4g * %#.4g)\n", eps_pt, eps_var, eps_pt_ratio);
+      }
+      // perturbation();
+      Time::end();
+    }
+    Time::end();
+  }
   Time::end();
 }
 
